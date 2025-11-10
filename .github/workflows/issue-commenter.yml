@@ -1,0 +1,36 @@
+name: Comment new issues on upstream
+
+# Run every 5 minutes
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  issues: write     # allow posting comments
+  contents: read
+
+jobs:
+  comment-on-upstream-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (if you want to persist or see files)
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install requests
+
+      - name: Run commenter script
+        env:
+          UPSTREAM_PAT: ${{ secrets.UPSTREAM_PAT }}
+          UPSTREAM_OWNER: ${{ secrets.UPSTREAM_OWNER }}
+          UPSTREAM_REPO: ${{ secrets.UPSTREAM_REPO }}
+          BOT_USERNAME: ${{ secrets.BOT_USERNAME }}  # your username, e.g. "arkid"
+          COMMENT_BODY: '@arkid can you please assign this issue to me, I would love to contribute'
+        run: |
+          python .github/scripts/comment_upstream_issues.py
